@@ -1,0 +1,1150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlatformRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  INVITED
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  AGENT
+}
+
+enum TenantStatus {
+  ACTIVE
+  TRIALING
+  SUSPENDED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum IntegrationStatus {
+  PENDING
+  ACTIVE
+  ACTION_REQUIRED
+  DISCONNECTED
+  ERROR
+}
+
+enum MessagingChannel {
+  FACEBOOK_PAGE_MESSENGER
+}
+
+enum MessagingConnectionStatus {
+  PENDING
+  ACTIVE
+  ACTION_REQUIRED
+  DISCONNECTED
+  ERROR
+}
+
+enum InventorySourceStatus {
+  DRAFT
+  DETECTING
+  REQUIRES_REVIEW
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  FAILED
+}
+
+enum SourceProfileStatus {
+  DRAFT
+  REVIEW_REQUIRED
+  APPROVED
+  ACTIVE
+  ARCHIVED
+  FAILED
+}
+
+enum SourceDetectionStatus {
+  RUNNING
+  COMPLETED
+  REVIEW_REQUIRED
+  FAILED
+}
+
+enum SourceDetectionStrategy {
+  FEED_DISCOVERY
+  STRUCTURED_DATA
+  PLATFORM_TEMPLATE
+  GENERIC_CRAWLER
+  MANUAL_FALLBACK
+}
+
+enum ExtractionRuleType {
+  LINK_DISCOVERY
+  LIST_CONTAINER
+  DETAIL_LINK
+  TITLE
+  PRICE
+  MILEAGE
+  VIN
+  STOCK_NUMBER
+  IMAGE
+  DETAIL_FIELD
+  PAGINATION
+}
+
+enum FieldTransform {
+  TEXT
+  NUMBER
+  CURRENCY
+  URL
+  ARRAY
+  CONDITION
+  TRIM
+}
+
+enum InventoryProviderType {
+  WEBSITE_SCRAPER
+  FEED
+  VAUTO
+}
+
+enum VehicleCondition {
+  NEW
+  USED
+  CPO
+  UNKNOWN
+}
+
+enum VehicleLifecycleStatus {
+  ACTIVE
+  STALE
+  ARCHIVED
+  REMOVED
+}
+
+enum VehicleExportStatus {
+  NOT_EXPORTED
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ExportFormat {
+  CSV
+  JSON
+}
+
+enum QueueJobStatus {
+  QUEUED
+  PROCESSING
+  RETRYING
+  COMPLETED
+  FAILED
+  DEAD_LETTERED
+  CANCELED
+}
+
+enum QueueJobType {
+  SOURCE_SYNC
+  VEHICLE_REFRESH
+  EXPORT_GENERATION
+  CONVERSATION_RESPONSE
+  PROVIDER_SYNC
+  PUBLICATION_CREATE
+  PUBLICATION_UPDATE
+  PUBLICATION_ARCHIVE
+}
+
+enum JobPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+enum SyncHealthStatus {
+  HEALTHY
+  WARNING
+  CRITICAL
+  UNKNOWN
+}
+
+enum ExportJobItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum StorageProvider {
+  LOCAL
+  S3
+}
+
+enum ConversationStatus {
+  OPEN
+  NEEDS_HUMAN
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageAuthorType {
+  CUSTOMER
+  BOT
+  HUMAN
+  SYSTEM
+}
+
+enum HandoffStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  DISMISSED
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  LOST
+  CONVERTED
+}
+
+enum ListingAssignmentStatus {
+  READY_TO_POST
+  POSTED
+  NEEDS_UPDATE
+  SOLD_ACTION_REQUIRED
+  ARCHIVED
+}
+
+enum ListingTaskType {
+  INITIAL_POST
+  UPDATE_POST
+  MARK_SOLD
+}
+
+enum ListingTaskStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  DISMISSED
+}
+
+enum PublicationChannel {
+  FACEBOOK_PAGE_POST
+  FACEBOOK_MARKETPLACE_REVIEW
+}
+
+enum PublicationStatus {
+  NOT_PUBLISHED
+  QUEUED
+  POSTING
+  POSTED
+  UPDATE_QUEUED
+  UPDATING
+  UPDATED
+  UNPUBLISH_QUEUED
+  UNPUBLISHED
+  FAILED
+  NEEDS_REVIEW
+}
+
+enum PublicationSyncReason {
+  INITIAL_PUBLISH
+  INVENTORY_CHANGED
+  MANUAL_REFRESH
+  SOLD_OR_REMOVED
+}
+
+enum VehicleChangeType {
+  CREATED
+  UPDATED
+  PRICE_CHANGED
+  STATUS_CHANGED
+  ARCHIVED
+  EXPORT_MARKED
+  REFRESHED
+}
+
+model Tenant {
+  id                 String              @id @default(cuid())
+  name               String
+  slug               String              @unique
+  primaryWebsiteUrl  String?
+  status             TenantStatus        @default(TRIALING)
+  postingRotationCursor Int              @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  memberships                 TenantMembership[]
+  subscriptions               Subscription[]
+  metaAuthAccounts            MetaAuthAccount[]
+  messagingConnections        MessagingConnection[]
+  messagingWebhookEvents      MessagingWebhookEvent[]
+  conversations               Conversation[]
+  messages                    Message[]
+  handoffTasks                HandoffTask[]
+  leads                       Lead[]
+  listingAssignments          ListingAssignment[]
+  listingTasks                ListingTask[]
+  inventoryProviderConnections InventoryProviderConnection[]
+  inventorySources            InventorySource[]
+  sourceProfiles              SourceProfile[]
+  sourceDetectionRuns         SourceDetectionRun[]
+  extractionRules             ExtractionRule[]
+  fieldMappings               FieldMapping[]
+  vehicles                    Vehicle[]
+  vehicleImages               VehicleImage[]
+  vehicleSnapshots            VehicleSnapshot[]
+  vehicleChangeEvents         VehicleChangeEvent[]
+  vehiclePublications         VehiclePublication[]
+  syncRuns                    SyncRun[]
+  syncHealthMetrics           SyncHealthMetric[]
+  sourceHealthAlerts          SourceHealthAlert[]
+  backgroundJobs              BackgroundJob[]
+  exportJobs                  ExportJob[]
+  exportJobItems              ExportJobItem[]
+  idempotencyKeys             IdempotencyKey[]
+  auditLogs                   AuditLog[]
+}
+
+model User {
+  id                     String              @id @default(cuid())
+  name                   String?
+  email                  String              @unique
+  passwordHash           String
+  status                 UserStatus          @default(ACTIVE)
+  platformRole           PlatformRole        @default(USER)
+  emailVerified          DateTime?
+  image                  String?
+  lastLoginAt            DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  accounts               Account[]
+  sessions               Session[]
+  memberships                  TenantMembership[]
+  approvedSourceProfiles       SourceProfile[]               @relation("ApprovedSourceProfiles")
+  createdDetectionRuns         SourceDetectionRun[]          @relation("DetectionRunCreator")
+  createdBackgroundJobs        BackgroundJob[]               @relation("BackgroundJobCreator")
+  createdExportJobs            ExportJob[]                   @relation("ExportJobCreator")
+  createdSyncRuns              SyncRun[]                     @relation("SyncRunTriggerUser")
+  createdMessagingConnections  MessagingConnection[]         @relation("MessagingConnectionCreator")
+  createdMetaAuthAccounts      MetaAuthAccount[]             @relation("MetaAuthAccountCreator")
+  createdInventoryProviders    InventoryProviderConnection[] @relation("InventoryProviderConnectionCreator")
+  createdVehiclePublications   VehiclePublication[]          @relation("VehiclePublicationCreator")
+  assignedConversations        Conversation[]                @relation("ConversationAssignee")
+  assignedHandoffTasks         HandoffTask[]                 @relation("HandoffAssignee")
+  createdListingAssignments    ListingAssignment[]           @relation("ListingAssignmentCreator")
+  resolvedListingTasks         ListingTask[]                 @relation("ListingTaskResolver")
+  auditLogs                    AuditLog[]                    @relation("AuditActor")
+}
+
+model TenantMembership {
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String
+  role       UserRole @default(OWNER)
+  isDefault  Boolean  @default(false)
+  listingEnabled Boolean @default(false)
+  listingOrder Int    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingAssignments ListingAssignment[]
+  listingTasks      ListingTask[]
+
+  @@unique([tenantId, userId])
+  @@index([userId, isDefault])
+  @@index([tenantId, listingEnabled, listingOrder])
+}
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  tenantId                String
+  provider                String             @default("stripe")
+  planKey                 String             @default("starter")
+  status                  SubscriptionStatus @default(TRIAL)
+  providerCustomerId      String?
+  providerSubscriptionId  String?
+  trialEndsAt             DateTime?
+  currentPeriodEndsAt     DateTime?
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  tenant                  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+}
+
+model MessagingConnection {
+  id                       String                    @id @default(cuid())
+  tenantId                 String
+  metaAuthAccountId        String?
+  channel                  MessagingChannel          @default(FACEBOOK_PAGE_MESSENGER)
+  status                   MessagingConnectionStatus @default(PENDING)
+  pageId                   String?
+  pageName                 String?
+  pageUsername             String?
+  pageAccessTokenEncrypted String?
+  permissions              Json?
+  metadata                 Json?
+  aiRepliesEnabled         Boolean                   @default(true)
+  humanHandoffEnabled      Boolean                   @default(true)
+  postingEnabled           Boolean                   @default(false)
+  connectedAt              DateTime?
+  lastWebhookAt            DateTime?
+  lastMessageAt            DateTime?
+  lastPublishedAt          DateTime?
+  disconnectedAt           DateTime?
+  errorText                String?
+  createdById              String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  metaAuthAccount          MetaAuthAccount?          @relation(fields: [metaAuthAccountId], references: [id], onDelete: SetNull)
+  createdBy                User?                     @relation("MessagingConnectionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  webhookEvents            MessagingWebhookEvent[]
+  conversations            Conversation[]
+  leads                    Lead[]
+  vehiclePublications      VehiclePublication[]
+
+  @@unique([tenantId, channel, pageId])
+  @@index([tenantId, status, channel])
+}
+
+model MetaAuthAccount {
+  id                    String            @id @default(cuid())
+  tenantId              String
+  status                IntegrationStatus @default(PENDING)
+  facebookUserId        String
+  displayName           String?
+  accessTokenEncrypted  String?
+  refreshTokenEncrypted String?
+  tokenExpiresAt        DateTime?
+  grantedScopes         Json?
+  metadata              Json?
+  createdById           String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  tenant                Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy             User?             @relation("MetaAuthAccountCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  messagingConnections  MessagingConnection[]
+  vehiclePublications   VehiclePublication[]
+
+  @@unique([tenantId, facebookUserId])
+  @@index([tenantId, status, createdAt])
+}
+
+model MessagingWebhookEvent {
+  id                   String              @id @default(cuid())
+  tenantId             String
+  messagingConnectionId String?
+  externalEventId      String?
+  signature            String?
+  payload              Json
+  receivedAt           DateTime            @default(now())
+  processedAt          DateTime?
+  createdAt            DateTime            @default(now())
+  tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messagingConnection  MessagingConnection? @relation(fields: [messagingConnectionId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, externalEventId])
+  @@index([tenantId, processedAt, createdAt])
+}
+
+model Conversation {
+  id                   String             @id @default(cuid())
+  tenantId             String
+  messagingConnectionId String
+  vehicleId            String?
+  assignedToId         String?
+  externalThreadId     String
+  customerPsid         String
+  customerName         String?
+  customerProfile      Json?
+  status               ConversationStatus @default(OPEN)
+  aiEnabled            Boolean            @default(true)
+  handoffReason        String?
+  lastAiConfidence     Float?
+  lastInboundAt        DateTime?
+  lastOutboundAt       DateTime?
+  lastMessageAt        DateTime           @default(now())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messagingConnection  MessagingConnection @relation(fields: [messagingConnectionId], references: [id], onDelete: Cascade)
+  vehicle              Vehicle?           @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  assignedTo           User?              @relation("ConversationAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  messages             Message[]
+  handoffTasks         HandoffTask[]
+  leads                Lead[]
+
+  @@unique([messagingConnectionId, customerPsid])
+  @@index([tenantId, status, lastMessageAt])
+}
+
+model Message {
+  id               String            @id @default(cuid())
+  tenantId         String
+  conversationId   String
+  externalMessageId String?
+  direction        MessageDirection
+  authorType       MessageAuthorType
+  text             String?
+  payload          Json?
+  sentAt           DateTime          @default(now())
+  deliveredAt      DateTime?
+  errorText        String?
+  createdAt        DateTime          @default(now())
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation     Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, externalMessageId])
+  @@index([tenantId, conversationId, createdAt])
+}
+
+model HandoffTask {
+  id             String        @id @default(cuid())
+  tenantId       String
+  conversationId String
+  assignedToId   String?
+  status         HandoffStatus @default(OPEN)
+  reason         String
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  resolvedAt     DateTime?
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  assignedTo     User?         @relation("HandoffAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+}
+
+model Lead {
+  id                   String              @id @default(cuid())
+  tenantId             String
+  messagingConnectionId String?
+  conversationId       String?
+  vehicleId            String?
+  name                 String?
+  email                String?
+  phone                String?
+  status               LeadStatus          @default(NEW)
+  notes                String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  tenant               Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messagingConnection  MessagingConnection? @relation(fields: [messagingConnectionId], references: [id], onDelete: SetNull)
+  conversation         Conversation?       @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  vehicle              Vehicle?            @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+}
+
+model ListingAssignment {
+  id                    String                  @id @default(cuid())
+  tenantId              String
+  vehicleId             String                  @unique
+  assigneeMembershipId  String
+  assignedById          String?
+  status                ListingAssignmentStatus @default(READY_TO_POST)
+  assignmentSequence    Int
+  assignmentOrderSnapshot Int
+  listingUrl            String?
+  listingReference      String?
+  postedAt              DateTime?
+  lastTaskAt            DateTime?
+  lastStatusAt          DateTime?
+  notes                 String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  tenant                Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle                 @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  assigneeMembership    TenantMembership        @relation(fields: [assigneeMembershipId], references: [id], onDelete: Cascade)
+  assignedBy            User?                   @relation("ListingAssignmentCreator", fields: [assignedById], references: [id], onDelete: SetNull)
+  tasks                 ListingTask[]
+
+  @@index([tenantId, assigneeMembershipId, status, updatedAt])
+  @@index([tenantId, status, updatedAt])
+}
+
+model ListingTask {
+  id                    String            @id @default(cuid())
+  tenantId              String
+  assignmentId          String
+  vehicleId             String
+  assigneeMembershipId  String
+  taskType              ListingTaskType
+  status                ListingTaskStatus @default(OPEN)
+  title                 String
+  description           String?
+  payload               Json?
+  resolvedById          String?
+  completedAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  tenant                Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignment            ListingAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  assigneeMembership    TenantMembership  @relation(fields: [assigneeMembershipId], references: [id], onDelete: Cascade)
+  resolvedBy            User?             @relation("ListingTaskResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, assigneeMembershipId, status, createdAt])
+  @@index([tenantId, vehicleId, status, createdAt])
+}
+
+model InventorySource {
+  id                String                @id @default(cuid())
+  tenantId          String
+  inventoryProviderConnectionId String?
+  providerType      InventoryProviderType @default(WEBSITE_SCRAPER)
+  slug              String
+  name              String
+  websiteUrl        String
+  baseUrl           String
+  inventoryUrl      String?
+  adapterKey        String?
+  status            InventorySourceStatus @default(DRAFT)
+  requiresReview    Boolean               @default(false)
+  syncCron          String?
+  isAutoApproved    Boolean               @default(false)
+  sourceProfileId   String?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  tenant            Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  inventoryProviderConnection InventoryProviderConnection? @relation(fields: [inventoryProviderConnectionId], references: [id], onDelete: SetNull)
+  sourceProfile     SourceProfile?        @relation(fields: [sourceProfileId], references: [id], onDelete: SetNull)
+  detectionRuns     SourceDetectionRun[]
+  vehicles          Vehicle[]
+  syncRuns          SyncRun[]
+  syncHealthMetrics SyncHealthMetric[]
+  sourceHealthAlerts SourceHealthAlert[]
+  backgroundJobs    BackgroundJob[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, status])
+}
+
+model InventoryProviderConnection {
+  id                  String                @id @default(cuid())
+  tenantId            String
+  providerType        InventoryProviderType
+  status              IntegrationStatus     @default(PENDING)
+  name                String
+  externalAccountId   String?
+  credentialReference String?
+  baseUrl             String?
+  syncCron            String?
+  lastCursor          String?
+  lastSyncedAt        DateTime?
+  metadata            Json?
+  createdById         String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy           User?                 @relation("InventoryProviderConnectionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  inventorySources    InventorySource[]
+
+  @@index([tenantId, providerType, status, createdAt])
+}
+
+model SourceProfile {
+  id                 String                  @id @default(cuid())
+  tenantId           String
+  adapterKey         String
+  status             SourceProfileStatus     @default(DRAFT)
+  detectionStrategy  SourceDetectionStrategy
+  confidence         Float                   @default(0)
+  inventoryPath      String?
+  detailUrlPattern   String?
+  notes              String?
+  previewPayload     Json?
+  metadata           Json?
+  approvedAt         DateTime?
+  approvedById       String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  tenant             Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  approvedBy         User?                   @relation("ApprovedSourceProfiles", fields: [approvedById], references: [id], onDelete: SetNull)
+  inventorySources   InventorySource[]
+  detectionRuns      SourceDetectionRun[]
+  extractionRules    ExtractionRule[]
+  fieldMappings      FieldMapping[]
+  vehicles           Vehicle[]
+
+  @@index([tenantId, status])
+}
+
+model SourceDetectionRun {
+  id               String                  @id @default(cuid())
+  tenantId         String
+  inventorySourceId String
+  sourceProfileId  String?
+  submittedUrl     String
+  normalizedUrl    String
+  status           SourceDetectionStatus   @default(RUNNING)
+  confidence       Float                   @default(0)
+  primaryStrategy  SourceDetectionStrategy?
+  strategiesTried  Json?
+  requiresReview   Boolean                 @default(false)
+  summary          String?
+  previewPayload   Json?
+  createdById      String?
+  startedAt        DateTime                @default(now())
+  completedAt      DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  tenant           Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  inventorySource  InventorySource         @relation(fields: [inventorySourceId], references: [id], onDelete: Cascade)
+  sourceProfile    SourceProfile?          @relation(fields: [sourceProfileId], references: [id], onDelete: SetNull)
+  createdBy        User?                   @relation("DetectionRunCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([inventorySourceId, createdAt])
+}
+
+model ExtractionRule {
+  id             String             @id @default(cuid())
+  tenantId       String
+  sourceProfileId String
+  ruleType       ExtractionRuleType
+  label          String
+  selector       String
+  attribute      String?
+  regex          String?
+  isRequired     Boolean            @default(false)
+  sortOrder      Int                @default(0)
+  configJson     Json?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  tenant         Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceProfile  SourceProfile      @relation(fields: [sourceProfileId], references: [id], onDelete: Cascade)
+
+  @@index([sourceProfileId, sortOrder])
+}
+
+model FieldMapping {
+  id             String         @id @default(cuid())
+  tenantId       String
+  sourceProfileId String
+  targetField    String
+  sourcePath     String
+  transform      FieldTransform @default(TEXT)
+  fallbackValue  String?
+  isRequired     Boolean        @default(false)
+  configJson     Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceProfile  SourceProfile  @relation(fields: [sourceProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceProfileId, targetField])
+}
+
+model Vehicle {
+  id                 String                @id @default(cuid())
+  tenantId           String
+  sourceId           String
+  sourceProfileId    String?
+  sourceVehicleKey   String
+  title              String?
+  vin                String?
+  year               Int?
+  make               String?
+  model              String?
+  trim               String?
+  price              Int?
+  mileage            Int?
+  stockNumber        String?
+  bodyStyle          String?
+  drivetrain         String?
+  engine             String?
+  transmission       String?
+  fuelType           String?
+  exteriorColor      String?
+  interiorColor      String?
+  condition          VehicleCondition      @default(UNKNOWN)
+  description        String?
+  detailPageUrl      String
+  sourceUrl          String
+  primaryImageUrl    String?
+  rawPayload         Json?
+  lifecycleStatus    VehicleLifecycleStatus @default(ACTIVE)
+  exportStatus       VehicleExportStatus   @default(NOT_EXPORTED)
+  exportAttemptCount Int                   @default(0)
+  lastPublishFingerprint String?
+  firstSeenAt        DateTime              @default(now())
+  lastSeenAt         DateTime              @default(now())
+  lastUpdatedAt      DateTime              @default(now())
+  lastExportedAt     DateTime?
+  removedAt          DateTime?
+  archivedAt         DateTime?
+  isArchived         Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source             InventorySource       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceProfile      SourceProfile?        @relation(fields: [sourceProfileId], references: [id], onDelete: SetNull)
+  images             VehicleImage[]
+  snapshots          VehicleSnapshot[]
+  changeEvents       VehicleChangeEvent[]
+  exportItems        ExportJobItem[]
+  publications       VehiclePublication[]
+  conversations      Conversation[]
+  leads              Lead[]
+  listingAssignment  ListingAssignment?
+  listingTasks       ListingTask[]
+
+  @@unique([tenantId, sourceId, sourceVehicleKey])
+  @@unique([tenantId, vin])
+  @@index([tenantId, make, model, year])
+  @@index([tenantId, lifecycleStatus, exportStatus])
+  @@index([tenantId, exportStatus, updatedAt])
+  @@index([tenantId, lifecycleStatus, updatedAt])
+  @@index([tenantId, vin])
+  @@index([tenantId, stockNumber])
+  @@index([tenantId, make])
+  @@index([tenantId, model])
+  @@index([tenantId, year])
+}
+
+model VehiclePublication {
+  id                   String                @id @default(cuid())
+  tenantId             String
+  vehicleId            String
+  metaAuthAccountId    String
+  messagingConnectionId String?
+  channel              PublicationChannel
+  status               PublicationStatus     @default(NOT_PUBLISHED)
+  syncReason           PublicationSyncReason?
+  externalListingId    String?
+  externalListingUrl   String?
+  sourceFingerprint    String?
+  postedPayload        Json?
+  postedPrice          Int?
+  postedMileage        Int?
+  postedAt             DateTime?
+  lastSyncedAt         DateTime?
+  lastErrorAt          DateTime?
+  errorText            String?
+  createdById          String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle              Vehicle               @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  metaAuthAccount      MetaAuthAccount       @relation(fields: [metaAuthAccountId], references: [id], onDelete: Cascade)
+  messagingConnection  MessagingConnection?  @relation(fields: [messagingConnectionId], references: [id], onDelete: SetNull)
+  createdBy            User?                 @relation("VehiclePublicationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([vehicleId, metaAuthAccountId, channel])
+  @@index([tenantId, status, channel, updatedAt])
+  @@index([tenantId, messagingConnectionId, status])
+}
+
+model VehicleImage {
+  id             String   @id @default(cuid())
+  tenantId       String
+  vehicleId      String
+  url            String
+  cachedAssetUrl String?
+  storageKey     String?
+  storageProvider StorageProvider?
+  contentType    String?
+  byteSize       Int?
+  sortOrder      Int      @default(0)
+  sourceLabel    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, sortOrder])
+  @@index([tenantId, storageKey])
+}
+
+model SyncRun {
+  id               String                 @id @default(cuid())
+  tenantId         String
+  sourceId         String
+  backgroundJobId  String?                @unique
+  status           QueueJobStatus         @default(QUEUED)
+  detectionStrategy SourceDetectionStrategy?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  totalFound       Int                    @default(0)
+  createdCount     Int                    @default(0)
+  updatedCount     Int                    @default(0)
+  archivedCount    Int                    @default(0)
+  unchangedCount   Int                    @default(0)
+  failedCount      Int                    @default(0)
+  notes            String?
+  triggeredById    String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source           InventorySource        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  backgroundJob    BackgroundJob?         @relation(fields: [backgroundJobId], references: [id], onDelete: SetNull)
+  triggeredBy      User?                  @relation("SyncRunTriggerUser", fields: [triggeredById], references: [id], onDelete: SetNull)
+  vehicleSnapshots VehicleSnapshot[]
+  vehicleChanges   VehicleChangeEvent[]
+  sourceHealthAlerts SourceHealthAlert[]
+
+  @@index([tenantId, sourceId, createdAt])
+}
+
+model VehicleSnapshot {
+  id              String                @id @default(cuid())
+  tenantId        String
+  vehicleId       String
+  syncRunId       String?
+  title           String?
+  price           Int?
+  mileage         Int?
+  lifecycleStatus VehicleLifecycleStatus
+  exportStatus    VehicleExportStatus
+  primaryImageUrl String?
+  payload         Json?
+  capturedAt      DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  tenant          Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle         Vehicle               @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  syncRun         SyncRun?              @relation(fields: [syncRunId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, vehicleId, capturedAt])
+  @@index([syncRunId])
+}
+
+model VehicleChangeEvent {
+  id            String            @id @default(cuid())
+  tenantId      String
+  vehicleId     String
+  syncRunId     String?
+  changeType    VehicleChangeType
+  fieldName     String?
+  previousValue String?
+  nextValue     String?
+  summary       String
+  createdAt     DateTime          @default(now())
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle       Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  syncRun       SyncRun?          @relation(fields: [syncRunId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, vehicleId, createdAt])
+  @@index([syncRunId])
+}
+
+model SyncHealthMetric {
+  id               String           @id @default(cuid())
+  tenantId         String
+  sourceId         String
+  status           SyncHealthStatus @default(UNKNOWN)
+  observedAt       DateTime         @default(now())
+  vehicleCount     Int              @default(0)
+  staleVehicleCount Int             @default(0)
+  missingVinCount  Int              @default(0)
+  missingPriceCount Int             @default(0)
+  failedCount      Int              @default(0)
+  successRate      Float?
+  notes            String?
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source           InventorySource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sourceId, observedAt])
+}
+
+model SourceHealthAlert {
+  id         String           @id @default(cuid())
+  tenantId   String
+  sourceId   String
+  syncRunId  String?
+  severity   SyncHealthStatus @default(WARNING)
+  code       String
+  title      String
+  message    String
+  metadata   Json?
+  isResolved Boolean          @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source     InventorySource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  syncRun    SyncRun?         @relation(fields: [syncRunId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, isResolved, createdAt])
+  @@index([sourceId, code, isResolved])
+}
+
+model BackgroundJob {
+  id            String         @id @default(cuid())
+  tenantId      String
+  type          QueueJobType
+  status        QueueJobStatus @default(QUEUED)
+  priority      JobPriority    @default(NORMAL)
+  queueName     String
+  externalJobId String?        @unique
+  payload       Json?
+  result        Json?
+  errorText     String?
+  attempts      Int            @default(0)
+  maxAttempts   Int            @default(3)
+  startedAt     DateTime?
+  retryAt       DateTime?
+  finishedAt    DateTime?
+  deadLetteredAt DateTime?
+  deadLetterQueueName String?
+  sourceId      String?
+  createdById   String?
+  idempotencyKeyId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source        InventorySource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  createdBy     User?          @relation("BackgroundJobCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  idempotencyKey IdempotencyKey? @relation(fields: [idempotencyKeyId], references: [id], onDelete: SetNull)
+  syncRun       SyncRun?
+  exportJob     ExportJob?
+
+  @@index([tenantId, type, status, createdAt])
+  @@index([tenantId, idempotencyKeyId])
+}
+
+model ExportJob {
+  id              String             @id @default(cuid())
+  tenantId        String
+  backgroundJobId String?            @unique
+  status          QueueJobStatus     @default(QUEUED)
+  format          ExportFormat
+  fileName        String?
+  storagePath     String?
+  storageKey      String?
+  storageProvider StorageProvider?
+  filters         Json?
+  itemCount       Int                @default(0)
+  successCount    Int                @default(0)
+  failureCount    Int                @default(0)
+  errorText       String?
+  createdById     String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  completedAt     DateTime?
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  backgroundJob   BackgroundJob?     @relation(fields: [backgroundJobId], references: [id], onDelete: SetNull)
+  createdBy       User?              @relation("ExportJobCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  items           ExportJobItem[]
+
+  @@index([tenantId, status, createdAt])
+}
+
+model ExportJobItem {
+  id           String              @id @default(cuid())
+  tenantId     String
+  exportJobId  String
+  vehicleId    String
+  status       ExportJobItemStatus @default(PENDING)
+  payload      Json?
+  errorText    String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  exportJob    ExportJob           @relation(fields: [exportJobId], references: [id], onDelete: Cascade)
+  vehicle      Vehicle             @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([exportJobId, vehicleId])
+  @@index([tenantId, status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  tenantId    String?
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  summary    String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, entityType, entityId, createdAt])
+  @@index([action, createdAt])
+}
+
+model IdempotencyKey {
+  id             String            @id @default(cuid())
+  tenantId       String?
+  scope          String
+  key            String
+  fingerprint    String?
+  status         IdempotencyStatus @default(IN_PROGRESS)
+  resourceType   String?
+  resourceId     String?
+  responsePayload Json?
+  expiresAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  tenant         Tenant?           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  backgroundJobs BackgroundJob[]
+
+  @@unique([tenantId, scope, key])
+  @@index([scope, status, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
