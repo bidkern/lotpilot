@@ -1,0 +1,27 @@
+name: Portfolio checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://lotpilot:lotpilot@localhost:5432/lotpilot?schema=public
+      AUTH_SECRET: local-ci-secret-at-least-16-chars
+      APP_URL: http://localhost:3000
+      SCRAPER_HEADLESS: "true"
+      PLAYWRIGHT_BROWSER: chromium
+      STORAGE_PROVIDER: local
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run lint
+      - run: npm run build

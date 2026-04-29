@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "runtime-data", "dev.db"]
+  "exclude": ["node_modules", "runtime-data", "dev.db", "legacy_github_imports"]
 }
