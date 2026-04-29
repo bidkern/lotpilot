@@ -1,0 +1,887 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ParentAccountStatus {
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELED
+}
+
+enum DealershipStatus {
+  ONBOARDING
+  ACTIVE
+  DISABLED
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MANAGER
+  EMPLOYEE
+  BILLING
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  INACTIVE
+}
+
+enum SubscriptionProvider {
+  STRIPE
+  MANUAL
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum InventorySourceType {
+  API
+  FEED
+  WEBHOOK
+  MANUAL
+}
+
+enum InventorySourceStatus {
+  CONNECTED
+  DEGRADED
+  DISCONNECTED
+  ERROR
+}
+
+enum VehicleLifecycleStatus {
+  IN_STOCK
+  RESERVED
+  SOLD
+  WHOLESALE
+  ARCHIVED
+}
+
+enum ListingChannel {
+  FACEBOOK_MARKETPLACE
+  FACEBOOK_PAGE
+  OTHER
+}
+
+enum ListingMode {
+  DIRECT_API
+  HUMAN_ASSISTED
+}
+
+enum ListingStatus {
+  ELIGIBLE
+  QUEUED
+  ASSIGNED
+  DRAFT_READY
+  NEEDS_REVIEW
+  POSTED
+  FAILED
+  ARCHIVED
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  SKIPPED
+  REJECTED
+  COMPLETED
+  CANCELED
+  EXPIRED
+}
+
+enum SocialProvider {
+  FACEBOOK
+}
+
+enum SocialConnectionStatus {
+  CONNECTED
+  EXPIRED
+  DISCONNECTED
+  ERROR
+}
+
+enum FacebookAuthAccountStatus {
+  PENDING
+  ACTIVE
+  ACTION_REQUIRED
+  DISCONNECTED
+  ERROR
+}
+
+enum FacebookPageConnectionStatus {
+  PENDING
+  ACTIVE
+  DISCONNECTED
+  ERROR
+}
+
+enum QueueJobType {
+  INVENTORY_SYNC
+  LISTING_ASSIGNMENT
+  DRAFT_GENERATION
+  PUBLISH_ATTEMPT
+  CONVERSATION_SYNC
+  STALE_CLEANUP
+  NOTIFICATION_DISPATCH
+}
+
+enum PostingQueueStatus {
+  PENDING
+  READY
+  RUNNING
+  SUCCEEDED
+  FAILED
+  RETRY_SCHEDULED
+  CANCELED
+}
+
+enum ConversationStatus {
+  OPEN
+  PENDING_CUSTOMER
+  PENDING_EMPLOYEE
+  ESCALATED
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+  INTERNAL_NOTE
+}
+
+enum ActivityKind {
+  INVENTORY_SYNCED
+  LISTING_ASSIGNED
+  LISTING_DRAFT_READY
+  LISTING_POSTED
+  LISTING_FAILED
+  MESSAGE_RECEIVED
+  NOTE_ADDED
+  NOTIFICATION_SENT
+}
+
+enum AuditActorType {
+  USER
+  MEMBERSHIP
+  SYSTEM
+  JOB
+  WEBHOOK
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  ASSIGN
+  OVERRIDE
+  POST
+  RETRY
+  ESCALATE
+  LOGIN
+}
+
+enum WebhookProcessingStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+enum NotificationType {
+  QUEUE_ASSIGNMENT
+  MESSAGE_UNREAD
+  INTEGRATION_ISSUE
+  BILLING_ALERT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+enum SyncRunStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  PARTIAL
+  FAILED
+}
+
+enum VehicleChangeType {
+  CREATED
+  UPDATED
+  PRICE_CHANGED
+  STATUS_CHANGED
+  IMAGE_SYNCED
+  ARCHIVED
+}
+
+enum IdempotencyStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+model ParentAccount {
+  id                            String               @id @default(uuid()) @db.Uuid
+  name                          String
+  slug                          String               @unique
+  status                        ParentAccountStatus  @default(ACTIVE)
+  billingOwnerUserId            String?              @db.Uuid
+  rotationCursorMembershipId    String?              @db.Uuid
+  listingCooldownMinutes        Int                  @default(60)
+  maxPendingAssignmentsPerEmployee Int               @default(3)
+  dailyListingLimit             Int                  @default(4)
+  createdAt                     DateTime             @default(now())
+  updatedAt                     DateTime             @updatedAt
+
+  billingOwner                  User?                @relation("BillingOwner", fields: [billingOwnerUserId], references: [id], onDelete: SetNull)
+  rotationCursorMembership      Membership?          @relation("RotationCursor", fields: [rotationCursorMembershipId], references: [id], onDelete: SetNull)
+  dealerships                   Dealership[]
+  memberships                   Membership[]
+  subscriptions                 Subscription[]
+  facebookAuthAccounts          FacebookAuthAccount[]
+  facebookPageConnections       FacebookPageConnection[]
+  listingAssignments            ListingAssignment[]
+  listings                      Listing[]
+  conversations                 Conversation[]
+  activityLogs                  ActivityLog[]
+  auditLogs                     AuditLog[]
+  webhookEvents                 WebhookEvent[]
+  notifications                 Notification[]
+  postingQueue                  PostingQueue[]
+  syncRuns                      SyncRun[]
+  vehicleChangeEvents           VehicleChangeEvent[]
+  idempotencyKeys               IdempotencyKey[]
+}
+
+model Dealership {
+  id                  String            @id @default(uuid()) @db.Uuid
+  parentAccountId     String            @db.Uuid
+  name                String
+  slug                String
+  status              DealershipStatus  @default(ONBOARDING)
+  timezone            String
+  city                String?
+  state               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  parentAccount       ParentAccount     @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  memberships         Membership[]
+  inventorySources    InventorySource[]
+  facebookPageConnections FacebookPageConnection[]
+  vehicles            Vehicle[]
+  listingAssignments  ListingAssignment[]
+  listings            Listing[]
+  conversations       Conversation[]
+  activityLogs        ActivityLog[]
+  auditLogs           AuditLog[]
+  webhookEvents       WebhookEvent[]
+  notifications       Notification[]
+  postingQueue        PostingQueue[]
+  syncRuns            SyncRun[]
+  vehicleChangeEvents VehicleChangeEvent[]
+
+  @@unique([parentAccountId, slug])
+  @@index([parentAccountId, status])
+}
+
+model User {
+  id                          String         @id @default(uuid()) @db.Uuid
+  email                       String         @unique
+  firstName                   String?
+  lastName                    String?
+  passwordHash                String?
+  status                      UserStatus     @default(INVITED)
+  createdAt                   DateTime       @default(now())
+  updatedAt                   DateTime       @updatedAt
+
+  billingOwnerForParentAccounts ParentAccount[] @relation("BillingOwner")
+  memberships                 Membership[]
+  auditLogs                   AuditLog[]     @relation("AuditActorUser")
+}
+
+model Membership {
+  id                          String            @id @default(uuid()) @db.Uuid
+  parentAccountId             String            @db.Uuid
+  dealershipId                String?           @db.Uuid
+  userId                      String            @db.Uuid
+  role                        MembershipRole
+  status                      MembershipStatus  @default(INVITED)
+  rotationPosition            Int?
+  isBillingContact            Boolean           @default(false)
+  invitedAt                   DateTime?
+  lastActiveAt                DateTime?
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
+
+  parentAccount               ParentAccount     @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership                  Dealership?       @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  user                        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialAccounts              EmployeeSocialAccount[]
+  facebookAuthAccounts        FacebookAuthAccount[]
+  facebookPageConnections     FacebookPageConnection[]
+  assignedListingAssignments  ListingAssignment[] @relation("AssignmentAssignee")
+  createdListingAssignments   ListingAssignment[] @relation("AssignmentCreator")
+  listings                    Listing[]
+  ownedConversations          Conversation[]    @relation("ConversationOwner")
+  conversationMessages        Message[]         @relation("ConversationMessageAuthor")
+  notifications               Notification[]
+  assignedQueueItems          PostingQueue[]    @relation("QueueAssignee")
+  activityLogs                ActivityLog[]
+  auditLogs                   AuditLog[]        @relation("AuditActorMembership")
+  rotationCursorForParentAccounts ParentAccount[] @relation("RotationCursor")
+
+  @@unique([parentAccountId, userId])
+  @@index([parentAccountId, role, status])
+  @@index([parentAccountId, rotationPosition])
+}
+
+model Subscription {
+  id                    String                @id @default(uuid()) @db.Uuid
+  parentAccountId       String                @db.Uuid
+  provider              SubscriptionProvider
+  status                SubscriptionStatus
+  providerCustomerId    String?
+  providerSubscriptionId String?
+  planCode              String
+  seatCount             Int
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  canceledAt            DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  parentAccount         ParentAccount         @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+
+  @@index([parentAccountId, status])
+}
+
+model InventorySource {
+  id                    String                @id @default(uuid()) @db.Uuid
+  dealershipId          String                @db.Uuid
+  type                  InventorySourceType
+  provider              String
+  label                 String
+  status                InventorySourceStatus @default(CONNECTED)
+  baseUrl               String?
+  credentialsRef        String?
+  pollIntervalMinutes   Int?
+  lastWebhookAt         DateTime?
+  lastSyncStartedAt     DateTime?
+  lastSyncCompletedAt   DateTime?
+  lastSyncError         String?               @db.Text
+  settings              Json?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  dealership            Dealership            @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicles              Vehicle[]
+  webhookEvents         WebhookEvent[]
+  syncRuns              SyncRun[]
+
+  @@index([dealershipId, status])
+}
+
+model Vehicle {
+  id                    String                @id @default(uuid()) @db.Uuid
+  dealershipId          String                @db.Uuid
+  inventorySourceId     String                @db.Uuid
+  sourceVehicleKey      String
+  stockNumber           String
+  vin                   String
+  year                  Int
+  make                  String
+  model                 String
+  trim                  String?
+  bodyStyle             String?
+  exteriorColor         String?
+  interiorColor         String?
+  mileage               Int
+  priceCents            Int
+  msrpCents             Int?
+  timeOnLotDays         Int                  @default(0)
+  status                VehicleLifecycleStatus @default(IN_STOCK)
+  listedOnFacebook      Boolean              @default(false)
+  firstSeenAt           DateTime?
+  lastSeenAt            DateTime?
+  sourceUpdatedAt       DateTime?
+  syncedAt              DateTime?
+  reservedAt            DateTime?
+  soldAt                DateTime?
+  archivedAt            DateTime?
+  metadata              Json?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  dealership            Dealership           @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  inventorySource       InventorySource      @relation(fields: [inventorySourceId], references: [id], onDelete: Cascade)
+  images                VehicleImage[]
+  changeEvents          VehicleChangeEvent[]
+  listingAssignments    ListingAssignment[]
+  listings              Listing[]
+  conversations         Conversation[]
+  activityLogs          ActivityLog[]
+  postingQueue          PostingQueue[]
+
+  @@unique([dealershipId, sourceVehicleKey])
+  @@index([dealershipId, status, make, model])
+  @@index([dealershipId, priceCents, mileage])
+  @@index([dealershipId, timeOnLotDays])
+}
+
+model VehicleImage {
+  id            String      @id @default(uuid()) @db.Uuid
+  vehicleId     String      @db.Uuid
+  sourceImageKey String?
+  url           String
+  checksum      String?
+  position      Int
+  width         Int?
+  height        Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  vehicle       Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId, position])
+  @@index([vehicleId])
+}
+
+model ListingAssignment {
+  id                    String            @id @default(uuid()) @db.Uuid
+  parentAccountId       String            @db.Uuid
+  dealershipId          String            @db.Uuid
+  vehicleId             String            @db.Uuid
+  assigneeMembershipId  String?           @db.Uuid
+  assignedByMembershipId String?          @db.Uuid
+  assignmentMode        ListingMode       @default(HUMAN_ASSISTED)
+  status                AssignmentStatus  @default(ASSIGNED)
+  reason                String?
+  adminOverride         Boolean           @default(false)
+  cooldownApplied       Boolean           @default(false)
+  throttleApplied       Boolean           @default(false)
+  requeueCount          Int               @default(0)
+  assignedAt            DateTime          @default(now())
+  completedAt           DateTime?
+  canceledAt            DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  parentAccount         ParentAccount     @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  assigneeMembership    Membership?       @relation("AssignmentAssignee", fields: [assigneeMembershipId], references: [id], onDelete: SetNull)
+  assignedByMembership  Membership?       @relation("AssignmentCreator", fields: [assignedByMembershipId], references: [id], onDelete: SetNull)
+  listings              Listing[]
+  postingQueueItems     PostingQueue[]
+
+  @@index([parentAccountId, vehicleId, status])
+  @@index([assigneeMembershipId, status])
+  @@index([assignedAt])
+}
+
+model Listing {
+  id                    String           @id @default(uuid()) @db.Uuid
+  parentAccountId       String           @db.Uuid
+  dealershipId          String           @db.Uuid
+  vehicleId             String           @db.Uuid
+  assignmentId          String?          @db.Uuid
+  membershipId          String?          @db.Uuid
+  employeeSocialAccountId String?        @db.Uuid
+  channel               ListingChannel   @default(FACEBOOK_MARKETPLACE)
+  mode                  ListingMode      @default(HUMAN_ASSISTED)
+  status                ListingStatus    @default(ELIGIBLE)
+  externalListingId     String?
+  title                 String?
+  description           String?          @db.Text
+  draftPayload          Json?
+  publishedUrl          String?
+  priceCents            Int?
+  publishedAt           DateTime?
+  lastSyncedAt          DateTime?
+  failedAt              DateTime?
+  archivedAt            DateTime?
+  failureCode           String?
+  failureReason         String?          @db.Text
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  parentAccount         ParentAccount    @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership       @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  assignment            ListingAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  membership            Membership?      @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  employeeSocialAccount EmployeeSocialAccount? @relation(fields: [employeeSocialAccountId], references: [id], onDelete: SetNull)
+  conversations         Conversation[]
+  activityLogs          ActivityLog[]
+  notifications         Notification[]
+  postingQueue          PostingQueue[]
+
+  @@index([parentAccountId, status])
+  @@index([vehicleId, status])
+  @@index([channel, status])
+}
+
+model EmployeeSocialAccount {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  membershipId          String                 @db.Uuid
+  provider              SocialProvider
+  providerAccountId     String
+  status                SocialConnectionStatus @default(DISCONNECTED)
+  displayName           String?
+  accessTokenEncrypted  String?                @db.Text
+  refreshTokenEncrypted String?                @db.Text
+  tokenExpiresAt        DateTime?
+  scopes                String[]
+  lastValidatedAt       DateTime?
+  lastError             String?                @db.Text
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  membership            Membership             @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  listings              Listing[]
+
+  @@unique([membershipId, provider])
+  @@unique([provider, providerAccountId])
+}
+
+model FacebookAuthAccount {
+  id                    String                    @id @default(uuid()) @db.Uuid
+  parentAccountId       String                    @db.Uuid
+  membershipId          String                    @db.Uuid
+  provider              SocialProvider            @default(FACEBOOK)
+  facebookUserId        String
+  displayName           String?
+  status                FacebookAuthAccountStatus @default(PENDING)
+  accessTokenEncrypted  String?                   @db.Text
+  refreshTokenEncrypted String?                   @db.Text
+  tokenExpiresAt        DateTime?
+  grantedScopes         String[]
+  lastValidatedAt       DateTime?
+  lastError             String?                   @db.Text
+  metadata              Json?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  parentAccount         ParentAccount             @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  membership            Membership                @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  pageConnections       FacebookPageConnection[]
+
+  @@unique([parentAccountId, facebookUserId])
+  @@index([membershipId, status])
+}
+
+model FacebookPageConnection {
+  id                    String                      @id @default(uuid()) @db.Uuid
+  parentAccountId       String                      @db.Uuid
+  dealershipId          String?                     @db.Uuid
+  membershipId          String?                     @db.Uuid
+  facebookAuthAccountId String                      @db.Uuid
+  pageId                String
+  pageName              String
+  pageUsername          String?
+  status                FacebookPageConnectionStatus @default(PENDING)
+  pageAccessTokenEncrypted String?                  @db.Text
+  grantedTasks          String[]
+  messagingEnabled      Boolean                     @default(false)
+  postingEnabled        Boolean                     @default(false)
+  connectedAt           DateTime?
+  disconnectedAt        DateTime?
+  lastWebhookAt         DateTime?
+  lastError             String?                     @db.Text
+  metadata              Json?
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+
+  parentAccount         ParentAccount               @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership?                 @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  membership            Membership?                 @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  facebookAuthAccount   FacebookAuthAccount         @relation(fields: [facebookAuthAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([parentAccountId, pageId])
+  @@index([dealershipId, status])
+  @@index([membershipId, status])
+}
+
+model PostingQueue {
+  id                    String             @id @default(uuid()) @db.Uuid
+  parentAccountId       String             @db.Uuid
+  dealershipId          String             @db.Uuid
+  vehicleId             String             @db.Uuid
+  assignmentId          String?            @db.Uuid
+  listingId             String?            @db.Uuid
+  assignedMembershipId  String?            @db.Uuid
+  jobType               QueueJobType
+  status                PostingQueueStatus @default(PENDING)
+  priority              Int                @default(100)
+  attempts              Int                @default(0)
+  maxAttempts           Int                @default(5)
+  runAt                 DateTime
+  lockedAt              DateTime?
+  lastError             String?            @db.Text
+  payload               Json?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  parentAccount         ParentAccount      @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership         @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle            @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  assignment            ListingAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  listing               Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  assignedMembership    Membership?        @relation("QueueAssignee", fields: [assignedMembershipId], references: [id], onDelete: SetNull)
+
+  @@index([status, runAt])
+  @@index([dealershipId, jobType, status])
+  @@index([assignedMembershipId, status])
+}
+
+model SyncRun {
+  id                    String        @id @default(uuid()) @db.Uuid
+  parentAccountId       String        @db.Uuid
+  dealershipId          String        @db.Uuid
+  inventorySourceId     String        @db.Uuid
+  status                SyncRunStatus @default(QUEUED)
+  triggerSource         String?
+  cursor                String?
+  totalFound            Int           @default(0)
+  createdCount          Int           @default(0)
+  updatedCount          Int           @default(0)
+  unchangedCount        Int           @default(0)
+  archivedCount         Int           @default(0)
+  failedCount           Int           @default(0)
+  startedAt             DateTime?
+  completedAt           DateTime?
+  errorMessage          String?       @db.Text
+  metadata              Json?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  parentAccount         ParentAccount @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership    @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  inventorySource       InventorySource @relation(fields: [inventorySourceId], references: [id], onDelete: Cascade)
+  changeEvents          VehicleChangeEvent[]
+
+  @@index([dealershipId, status, createdAt])
+  @@index([inventorySourceId, status, createdAt])
+}
+
+model VehicleChangeEvent {
+  id                    String            @id @default(uuid()) @db.Uuid
+  parentAccountId       String            @db.Uuid
+  dealershipId          String            @db.Uuid
+  vehicleId             String            @db.Uuid
+  syncRunId             String?           @db.Uuid
+  changeType            VehicleChangeType
+  fieldName             String?
+  previousValue         String?
+  nextValue             String?
+  summary               String
+  metadata              Json?
+  createdAt             DateTime          @default(now())
+
+  parentAccount         ParentAccount     @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership        @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  syncRun               SyncRun?          @relation(fields: [syncRunId], references: [id], onDelete: SetNull)
+
+  @@index([vehicleId, createdAt])
+  @@index([dealershipId, changeType, createdAt])
+}
+
+model Conversation {
+  id                    String             @id @default(uuid()) @db.Uuid
+  parentAccountId       String             @db.Uuid
+  dealershipId          String             @db.Uuid
+  vehicleId             String?            @db.Uuid
+  listingId             String?            @db.Uuid
+  ownerMembershipId     String?            @db.Uuid
+  channel               ListingChannel     @default(FACEBOOK_MARKETPLACE)
+  status                ConversationStatus @default(OPEN)
+  externalThreadId      String
+  customerName          String
+  customerExternalId    String?
+  unreadCount           Int                @default(0)
+  lastCustomerMessageAt DateTime?
+  lastMessageAt         DateTime?
+  escalatedAt           DateTime?
+  closedAt              DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  parentAccount         ParentAccount      @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership         @relation(fields: [dealershipId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle?           @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  listing               Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  ownerMembership       Membership?        @relation("ConversationOwner", fields: [ownerMembershipId], references: [id], onDelete: SetNull)
+  messages              Message[]
+  activityLogs          ActivityLog[]
+  notifications         Notification[]
+
+  @@unique([dealershipId, externalThreadId])
+  @@index([ownerMembershipId, status, lastMessageAt])
+  @@index([dealershipId, unreadCount, lastMessageAt])
+}
+
+model Message {
+  id                    String             @id @default(uuid()) @db.Uuid
+  conversationId        String             @db.Uuid
+  authorMembershipId    String?            @db.Uuid
+  direction             MessageDirection
+  body                  String             @db.Text
+  externalMessageId     String?
+  sentAt                DateTime
+  createdAt             DateTime           @default(now())
+
+  conversation          Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  authorMembership      Membership?        @relation("ConversationMessageAuthor", fields: [authorMembershipId], references: [id], onDelete: SetNull)
+
+  @@unique([conversationId, externalMessageId])
+  @@index([conversationId, sentAt])
+}
+
+model ActivityLog {
+  id                    String           @id @default(uuid()) @db.Uuid
+  parentAccountId       String           @db.Uuid
+  dealershipId          String?          @db.Uuid
+  membershipId          String?          @db.Uuid
+  vehicleId             String?          @db.Uuid
+  listingId             String?          @db.Uuid
+  conversationId        String?          @db.Uuid
+  kind                  ActivityKind
+  summary               String
+  metadata              Json?
+  createdAt             DateTime         @default(now())
+
+  parentAccount         ParentAccount    @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership?      @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  membership            Membership?      @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  vehicle               Vehicle?         @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  listing               Listing?         @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  conversation          Conversation?    @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([parentAccountId, createdAt])
+  @@index([dealershipId, kind, createdAt])
+}
+
+model AuditLog {
+  id                    String           @id @default(uuid()) @db.Uuid
+  parentAccountId       String           @db.Uuid
+  dealershipId          String?          @db.Uuid
+  actorType             AuditActorType
+  actorUserId           String?          @db.Uuid
+  actorMembershipId     String?          @db.Uuid
+  action                AuditAction
+  targetType            String
+  targetId              String
+  requestId             String?
+  ipAddress             String?
+  userAgent             String?
+  before                Json?
+  after                 Json?
+  createdAt             DateTime         @default(now())
+
+  parentAccount         ParentAccount    @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership?      @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  actorUser             User?            @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorMembership       Membership?      @relation("AuditActorMembership", fields: [actorMembershipId], references: [id], onDelete: SetNull)
+
+  @@index([parentAccountId, createdAt])
+  @@index([targetType, targetId, createdAt])
+}
+
+model WebhookEvent {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  parentAccountId       String?                  @db.Uuid
+  dealershipId          String?                  @db.Uuid
+  inventorySourceId     String?                  @db.Uuid
+  provider              String
+  deliveryId            String
+  eventType             String
+  processingStatus      WebhookProcessingStatus  @default(RECEIVED)
+  signatureValid        Boolean                  @default(false)
+  payload               Json
+  receivedAt            DateTime                 @default(now())
+  processedAt           DateTime?
+  errorMessage          String?                  @db.Text
+
+  parentAccount         ParentAccount?           @relation(fields: [parentAccountId], references: [id], onDelete: SetNull)
+  dealership            Dealership?              @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  inventorySource       InventorySource?         @relation(fields: [inventorySourceId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, deliveryId])
+  @@index([processingStatus, receivedAt])
+}
+
+model IdempotencyKey {
+  id                    String            @id @default(uuid()) @db.Uuid
+  parentAccountId       String?           @db.Uuid
+  scope                 String
+  key                   String
+  fingerprint           String?
+  status                IdempotencyStatus @default(IN_PROGRESS)
+  resourceType          String?
+  resourceId            String?
+  responsePayload       Json?
+  expiresAt             DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  parentAccount         ParentAccount?    @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+
+  @@unique([parentAccountId, scope, key])
+  @@index([scope, status, createdAt])
+}
+
+model Notification {
+  id                    String             @id @default(uuid()) @db.Uuid
+  parentAccountId       String             @db.Uuid
+  dealershipId          String?            @db.Uuid
+  membershipId          String?            @db.Uuid
+  conversationId        String?            @db.Uuid
+  listingId             String?            @db.Uuid
+  type                  NotificationType
+  channel               NotificationChannel
+  status                NotificationStatus @default(PENDING)
+  title                 String
+  body                  String             @db.Text
+  scheduledAt           DateTime?
+  sentAt                DateTime?
+  readAt                DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  parentAccount         ParentAccount      @relation(fields: [parentAccountId], references: [id], onDelete: Cascade)
+  dealership            Dealership?        @relation(fields: [dealershipId], references: [id], onDelete: SetNull)
+  membership            Membership?        @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  conversation          Conversation?      @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  listing               Listing?           @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@index([membershipId, status, scheduledAt])
+  @@index([dealershipId, type, status])
+}
