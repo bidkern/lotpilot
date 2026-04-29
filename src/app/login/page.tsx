@@ -9,7 +9,7 @@ import { LoginForm } from "@/components/login-form";
 import { getTenantWorkspaceState } from "@/lib/services/tenant-service";
 
 export const metadata: Metadata = {
-  title: "The Book Login",
+  title: "Login | LotPilot",
 };
 
 type LoginPageProps = {
@@ -51,13 +51,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <section className="relative overflow-hidden rounded-[36px] border border-[rgba(228,209,170,0.18)] bg-[linear-gradient(135deg,rgba(8,22,25,0.98),rgba(18,53,47,0.95),rgba(82,125,92,0.9))] p-8 text-white shadow-[0_30px_90px_rgba(10,20,21,0.32)] sm:p-10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(228,209,170,0.18),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]" />
           <div className="relative">
-            <BrandLockup caption="Forest city inspired dealer software" />
+            <BrandLockup caption="All-in-one dealer operations software" />
             <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-              Multi-tenant inventory onboarding, sync health, and export operations for dealers.
+              Inventory, listing ops, and customer messaging in one dealer workspace.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/78 sm:text-lg">
-              Dealers get a simple paste-a-URL workflow. The platform handles detection, previews,
-              source profiles, scheduled syncs, and reviewable export files behind the scenes.
+              Dealers get a simple paste-a-URL workflow, then manage synced inventory, employee
+              listing queues, and Facebook-connected customer conversations from the same platform.
             </p>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-3">

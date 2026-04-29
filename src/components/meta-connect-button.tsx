@@ -14,7 +14,7 @@ type MetaPopupMessage = {
   type?: string;
 };
 
-const POPUP_NAME = "the-book-meta-connect";
+const POPUP_NAME = "lotpilot-meta-connect";
 
 function buildPopupFeatures() {
   const width = 620;
@@ -43,7 +43,7 @@ export function MetaConnectButton({ className = "" }: MetaConnectButtonProps) {
         return;
       }
 
-      if (event.data?.type !== "the-book-meta-auth") {
+      if (event.data?.type !== "lotpilot-meta-auth") {
         return;
       }
 

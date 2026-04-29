@@ -231,14 +231,14 @@ export function ListingAutomationPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-            Employee Listing Rotation
+            Listing Operations
           </p>
           <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            Marketplace-ready manual ops flow
+            Employee rotation and task routing
           </h3>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            The Book assigns vehicles in round-robin order, creates manual posting tasks, and keeps
-            each employee in their own secure bucket and inbox.
+            LotPilot routes review-ready vehicles into an employee rotation, creates posting tasks,
+            and keeps each teammate in their own secure bucket and inbox.
           </p>
         </div>
 

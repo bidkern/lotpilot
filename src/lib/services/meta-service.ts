@@ -230,7 +230,7 @@ export async function completeMetaOAuth(input: {
   }
 
   if (stateRecord.expiresAt && stateRecord.expiresAt < new Date()) {
-    throw new Error("Meta OAuth state has expired. Please reconnect from The Book.");
+    throw new Error("Meta OAuth state has expired. Please reconnect from LotPilot.");
   }
 
   if (stateRecord.status === IdempotencyStatus.COMPLETED) {

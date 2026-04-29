@@ -5,7 +5,7 @@ import { useState } from "react";
 
 type ThemeMode = "dark" | "light";
 
-const STORAGE_KEY = "the-book-theme";
+const STORAGE_KEY = "lotpilot-theme";
 
 function applyTheme(mode: ThemeMode) {
   document.documentElement.dataset.theme = mode;

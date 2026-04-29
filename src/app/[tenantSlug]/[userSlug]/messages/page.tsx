@@ -14,7 +14,7 @@ import { getEmployeeListingBucketData } from "@/lib/services/listing-assignment-
 import { buildUserMessagesPath } from "@/lib/workspace-routes";
 
 export const metadata: Metadata = {
-  title: "Messages | The Book",
+  title: "Messages | LotPilot",
 };
 
 type MessagesPageProps = {

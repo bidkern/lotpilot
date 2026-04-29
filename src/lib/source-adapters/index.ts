@@ -1,8 +1,8 @@
 import type { InventorySourceAdapter } from "@/lib/source-adapters/types";
-import { woosterCjdrAdapter } from "@/lib/source-adapters/wooster-cjdr";
+import { dealeronSearchAllAdapter } from "@/lib/source-adapters/dealeron-searchall";
 
 const adapters = new Map<string, InventorySourceAdapter>([
-  [woosterCjdrAdapter.key, woosterCjdrAdapter],
+  [dealeronSearchAllAdapter.key, dealeronSearchAllAdapter],
 ]);
 
 export function getSourceAdapter(adapterKey: string) {

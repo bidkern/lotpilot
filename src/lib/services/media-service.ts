@@ -25,7 +25,7 @@ async function fetchImageAsset(url: string) {
   try {
     const response = await fetch(url, {
       headers: {
-        "user-agent": "TheBookBot/1.0 (+image cache)",
+        "user-agent": "LotPilotBot/1.0 (+image cache)",
       },
       signal: controller.signal,
     });

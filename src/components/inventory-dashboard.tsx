@@ -578,11 +578,11 @@ export function InventoryDashboard({ currentUser, dashboard }: InventoryDashboar
               {currentUser.tenantName || dashboard.tenant.name}
             </p>
             <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-5xl">
-              Tenant inventory operations with honest automation and bulk controls.
+              All-in-one dealer operations with honest automation and human review.
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--muted)] sm:text-base">
-              Dealers paste a URL, review the detected sample, approve a source profile, and then
-              manage synced inventory with tenant-safe exports and sync health visibility.
+              Dealers onboard inventory sources, sync vehicles, route listing work to employees,
+              and manage Facebook-connected customer messaging from the same tenant-safe workspace.
             </p>
           </div>
 
@@ -632,7 +632,9 @@ export function InventoryDashboard({ currentUser, dashboard }: InventoryDashboar
         </div>
 
         <div className="mt-6 rounded-[24px] border border-[var(--line)] bg-[rgba(17,40,46,0.92)] px-5 py-4 text-sm text-white/82">
-          Supported workflow: queue exports, review generated CSV/JSON payloads, and post manually in downstream listing tools. Unsupported idea: claiming guaranteed direct Marketplace auto-posting for every dealer site.
+          Supported workflow: sync inventory, prepare reviewable exports and posting payloads,
+          route work to staff, and keep customer conversations in one system. Unsupported idea:
+          claiming universal one-click posting across every dealer site and destination.
         </div>
 
         <div className="mt-4 rounded-[24px] border border-[var(--line)] bg-white/80 px-5 py-4 text-sm text-[var(--foreground)]">
@@ -878,11 +880,11 @@ export function InventoryDashboard({ currentUser, dashboard }: InventoryDashboar
             {publicationDestinations.length ? (
               <div className="mt-4 rounded-[22px] border border-[var(--line)] bg-[rgba(247,242,235,0.72)] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                  Facebook Publication Destinations
+                  Facebook Review Destinations
                 </p>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                  Queue review-ready publication payloads to one connected Facebook owner/Page.
-                  Vehicles are deduplicated once per Facebook account.
+                  Prepare review-ready posting payloads for one connected Facebook Page. Vehicles
+                  are deduplicated per connected account so staff can work from one clean queue.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {publicationDestinations.map((destination) => (

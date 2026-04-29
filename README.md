@@ -1,350 +1,111 @@
 # LotPilot
 
-LotPilot is a production-minded multi-tenant dealer inventory onboarding, sync, and export platform built with Next.js, TypeScript, Prisma, PostgreSQL, Playwright, Auth.js, Zod, and `pg-boss`.
-
-The dealer UX is intentionally simple:
-
-1. Paste a dealership URL
-2. Auto-detect the inventory structure
-3. Preview sample vehicles
-4. Approve the source
-5. Let scheduled syncs populate the tenant workspace
-6. Manage inventory and export selected vehicles for downstream listing workflows
-
-Under the hood, the app does not pretend one generic scraper can solve every site. It uses layered detection and keeps low-confidence results in review instead of falsely claiming full automation.
-
-## Architecture Overview
-
-- `Next.js App Router` serves the onboarding flow, tenant dashboard, and API routes.
-- `PostgreSQL + Prisma` store tenants, users, memberships, inventory sources, source profiles, vehicles, snapshots, change events, sync runs, export jobs, and audit logs.
-- `Playwright` powers source adapters for supported dealership site templates.
-- `pg-boss` handles background jobs for source sync, vehicle refresh, and export generation with retry and dead-letter queue support.
-- `Auth.js` provides secure credentials login with tenant-scoped sessions and RBAC.
-- `Zod` validates API payloads for registration, onboarding, bulk actions, and sync requests.
-- Shared runtime services handle browser pooling, idempotency keys, source health alerts, and local/S3-compatible object storage.
-
-## Source Detection Strategy
-
-When a dealership URL is entered, the app tries sources in this order:
-
-1. Discoverable inventory feed URL
-2. JSON-LD / structured data
-3. Known website platform template detection
-4. Generic crawler + pattern detection
-5. Manual review fallback
-
-Current automated adapter support:
-
-- `DealerOn SearchAll` style inventory sites, including `woosterdodgejeep.com`
-
-Current honest fallback behavior:
-
-- feed / structured data / generic crawler previews can be saved
-- low-confidence detections remain review-required instead of auto-activating
-
-## Prisma Data Model
-
-Core multi-tenant models in [`prisma/schema.prisma`](/Users/adelm/Desktop/Car Stuff/prisma/schema.prisma):
-
-- `Tenant`
-- `User`
-- `TenantMembership`
-- `Subscription`
-- `InventorySource`
-- `SourceProfile`
-- `SourceDetectionRun`
-- `ExtractionRule`
-- `FieldMapping`
-- `Vehicle`
-- `VehicleImage`
-- `VehicleSnapshot`
-- `VehicleChangeEvent`
-- `SyncRun`
-- `SyncHealthMetric`
-- `BackgroundJob`
-- `ExportJob`
-- `ExportJobItem`
-- `AuditLog`
-
-Important enums:
-
-- `UserRole`: `OWNER`, `ADMIN`, `MANAGER`, `AGENT`
-- `InventorySourceStatus`: `DRAFT`, `DETECTING`, `REQUIRES_REVIEW`, `ACTIVE`, `PAUSED`, `ARCHIVED`, `FAILED`
-- `VehicleLifecycleStatus`: `ACTIVE`, `STALE`, `ARCHIVED`, `REMOVED`
-- `VehicleExportStatus`: `NOT_EXPORTED`, `QUEUED`, `PROCESSING`, `COMPLETED`, `FAILED`
-- `QueueJobType`: `SOURCE_SYNC`, `VEHICLE_REFRESH`, `EXPORT_GENERATION`
-
-## Folder Structure
-
-```text
-src/
-  app/
-    admin/                         tenant inventory dashboard
-    login/                         sign-in page
-    onboarding/                    URL -> detect -> preview -> approve flow
-    register/                      tenant + owner registration
-    api/
-      admin/
-        exports/[exportJobId]/download/
-        inventory/
-          route.ts
-        inventory/bulk/
-        inventory/sync/
-        vehicle-images/[vehicleImageId]/
-      auth/[...nextauth]/
-      onboarding/approve/
-      onboarding/detect/
-      register/
-  components/
-    inventory-dashboard.tsx        filters, table, row checkboxes, bulk actions, detail modal
-    login-form.tsx
-    onboarding-wizard.tsx
-    register-form.tsx
-  lib/
-    source-adapters/               reusable site adapters
-      playwright-pool.ts           shared Playwright browser/context pool
-    services/
-      bootstrap-service.ts
-      detection-service.ts
-      export-service.ts
-      idempotency-service.ts
-      inventory-service.ts
-      job-service.ts
-      media-service.ts
-      onboarding-service.ts
-      tenant-service.ts
-    authz.ts
-    request-auth.ts
-    marketplace.ts
-    prisma.ts
-    queue.ts
-    storage.ts
-scripts/
-  seed-admin.ts                    seeds a demo tenant owner workspace
-  run-source-sync.ts               runs an immediate sync for an active source
-  register-schedules.ts            registers recurring pg-boss schedules
-  start-worker.ts                  background worker
-```
-
-## Backend Endpoints
-
-- `POST /api/register`
-  Creates the first tenant owner account and workspace.
-
-- `POST /api/onboarding/detect`
-  Runs layered source detection, persists a `SourceDetectionRun`, and returns a sample preview.
-
-- `POST /api/onboarding/approve`
-  Converts a detection result into a reusable `SourceProfile`, activates supported sources, and queues the initial sync.
-
-- `POST /api/admin/inventory/sync`
-  Queues one or more tenant-scoped source sync jobs. Requires `MANAGER` or higher.
-
-- `GET /api/admin/inventory`
-  Returns tenant-scoped, server-filtered, paginated inventory data for the dashboard table.
-
-- `POST /api/admin/inventory/bulk`
-  Handles tenant-scoped bulk actions: `export`, `refresh`, `archive`, `markExported`, with manual, filtered, or all-inventory selection scopes.
-
-- `GET /api/admin/exports/[exportJobId]/download`
-  Downloads a completed tenant export artifact.
-
-- `GET /api/admin/vehicle-images/[vehicleImageId]`
-  Streams a tenant-scoped cached image from local or S3-compatible storage.
-
-## Onboarding Flow
-
-The dealer onboarding wizard in [`src/components/onboarding-wizard.tsx`](/Users/adelm/Desktop/Car Stuff/src/components/onboarding-wizard.tsx) implements:
-
-1. URL input
-2. detection request
-3. preview result with confidence + strategy
-4. approval step
-5. source activation for supported sites
-6. review-required save path for low-confidence sites
-
-The onboarding service in [`src/lib/services/onboarding-service.ts`](/Users/adelm/Desktop/Car Stuff/src/lib/services/onboarding-service.ts) persists:
-
-- `InventorySource`
-- `SourceDetectionRun`
-- `SourceProfile`
-- `ExtractionRule`
-- `FieldMapping`
-
-## Inventory Dashboard
-
-The dashboard in [`src/components/inventory-dashboard.tsx`](/Users/adelm/Desktop/Car Stuff/src/components/inventory-dashboard.tsx) includes:
-
-- search by VIN, stock number, make, model
-- filters for make, model, year, price, workflow status, export status
-- server-side pagination with tenant-safe server filtering
-- row checkbox selection
-- select page
-- select filtered
-- select all inventory
-- clear selection
-- bulk export
-- bulk archive
-- bulk refresh
-- bulk mark exported
-- source sync controls
-- source health alert visibility
-- sync run panel
-- export job panel
-- vehicle detail modal
-- snapshot and change-event history
-
-## Export Workflow
+LotPilot is an all-in-one dealer operations platform that combines inventory onboarding, listing operations, exports, and Facebook-connected customer messaging inside one tenant-safe workspace.
 
-The export pipeline in [`src/lib/services/export-service.ts`](/Users/adelm/Desktop/Car Stuff/src/lib/services/export-service.ts) works like this:
+LotPilot brings together dealership site onboarding, inventory sync, employee listing workflows, reviewable posting payloads, and customer conversations without forcing teams to bounce between separate tools.
 
-1. Selected vehicles create an `ExportJob`
-2. Each vehicle gets an `ExportJobItem`
-3. Vehicle export status moves through `QUEUED` -> `PROCESSING` -> `COMPLETED` or `FAILED`
-4. The worker writes a CSV or JSON file through the storage abstraction to local disk or S3-compatible object storage
-5. The dashboard exposes the download link when the job completes
-
-Runtime improvements in this version:
-
-- idempotent export and sync queue creation
-- dead-letter queue handling after retry exhaustion
-- optional image caching into object storage
-- browser pooling and batched inventory persistence
-- source health alert generation for failed syncs, field coverage drops, stale spikes, and sharp inventory drops
-
-Supported, policy-safe workflow:
-
-- reviewable export queue
-- CSV / JSON payload generation
-- manual downstream posting
-
-Unsupported claim we do not make:
-
-- universal direct Facebook Marketplace auto-posting for every dealer
-
-## Meta Setup
-
-The Book is ready for tenant-scoped Facebook Page connection, but you still need a real Meta app before the `Connect Facebook` flow can succeed.
-
-Local env values already expected by the app:
-
-- `META_APP_ID`
-- `META_APP_SECRET`
-- `META_REDIRECT_URI`
-- `META_VERIFY_TOKEN`
-- `META_TOKEN_ENCRYPTION_KEY`
-
-Update [`.env`](/Users/adelm/Desktop/Car Stuff/.env) with your real `META_APP_ID` and `META_APP_SECRET`. The local redirect URI is already set to:
-
-- `http://localhost:3000/api/meta/callback`
-
-The local webhook route in the app is:
-
-- `http://localhost:3000/api/meta/webhook`
-
-Recommended Meta app setup:
-
-1. Create a Meta app in the Meta developer dashboard.
-2. Add `Facebook Login`.
-3. Add `Messenger`.
-4. Add `Webhooks`.
-5. Set the Facebook Login redirect URI to `http://localhost:3000/api/meta/callback`.
-6. Set the webhook callback URL to a public HTTPS tunnel that forwards to `http://localhost:3000/api/meta/webhook`.
-7. Set the webhook verify token to the same value as `META_VERIFY_TOKEN` in `.env`.
-8. Request the Page scopes used by the app:
-   - `pages_manage_metadata`
-   - `pages_messaging`
-   - `pages_read_engagement`
-   - `pages_show_list`
-9. Connect with a Facebook account that manages at least one Page.
-10. Return to `/admin` and click `Connect Facebook`.
-
-Important local-dev note:
-
-- Facebook Login can use the localhost callback above.
-- Webhook delivery usually needs a public HTTPS URL, so for local testing you will typically need a tunnel such as `ngrok` or `cloudflared` that forwards to port `3000`.
-
-Once connected, the app will:
-
-- store the Facebook identity as a tenant-scoped `MetaAuthAccount`
-- let that tenant activate one or more Pages
-- track per-vehicle publication state
-- prevent duplicate publication tracking for the same vehicle/person combination
-
-Helpful official docs:
-
-- [Meta Facebook Login](https://developers.facebook.com/docs/facebook-login/)
-- [Meta Messenger Platform](https://developers.facebook.com/docs/messenger-platform/overview/)
-- [Meta Graph API Webhooks](https://developers.facebook.com/docs/graph-api/webhooks/getting-started/)
-- [Meta Pages API](https://developers.facebook.com/docs/pages-api/)
-
-## Auth and Tenant Isolation
-
-- Sessions include `tenantId`, `tenantName`, `role`, and `status`
-- Every dashboard/service query is tenant-scoped
-- Related rows like `VehicleImage`, `ExportJobItem`, `SyncRun`, and `AuditLog` carry `tenantId`
-- RBAC helpers enforce `OWNER`, `ADMIN`, `MANAGER`, `AGENT`
-- Bulk actions and downloads validate both auth and tenant ownership
-
-## Environment Variables
-
-See [`.env.example`](/Users/adelm/Desktop/Car Stuff/.env.example).
-
-Required:
-
-- `DATABASE_URL`
-- `AUTH_SECRET`
-
-Recommended:
-
-- `APP_URL`
-- `DEFAULT_SYNC_CRON`
-- `JOBS_EXPORT_DIRECTORY`
-- `STORAGE_PROVIDER`
-- `STORAGE_LOCAL_DIRECTORY`
-- `SCRAPER_DETAIL_CONCURRENCY`
-- `INVENTORY_PERSIST_BATCH_SIZE`
-- `IMAGE_CACHE_ENABLED`
-- `IMAGE_CACHE_LIMIT_PER_VEHICLE`
-- `SCRAPER_HEADLESS`
-- `PLAYWRIGHT_BROWSER`
-
-Optional S3-compatible storage:
-
-- `S3_BUCKET_NAME`
-- `S3_REGION`
-- `S3_ENDPOINT`
-- `S3_ACCESS_KEY_ID`
-- `S3_SECRET_ACCESS_KEY`
-- `S3_FORCE_PATH_STYLE`
-- `S3_PUBLIC_BASE_URL`
-
-Optional demo seeding:
-
-- `SEED_DEMO_EMAIL`
-- `SEED_DEMO_NAME`
-- `SEED_DEMO_PASSWORD`
-- `SEED_DEMO_TENANT_NAME`
-- `SEED_DEMO_WEBSITE_URL`
-
-## Local Setup
-
-1. Create a PostgreSQL database.
-2. Copy [`.env.example`](/Users/adelm/Desktop/Car Stuff/.env.example) to `.env` and fill in the values.
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Generate Prisma client and push the schema:
+Instead of pretending one generic scraper can automate every dealer site, LotPilot uses layered detection and keeps low-confidence sources in review until they are ready. That "honest automation" approach is a core product decision.
+
+## Screenshots
+
+Live UI snapshots from a generic seeded LotPilot workspace:
+
+| Dashboard | Onboarding |
+| --- | --- |
+| ![LotPilot dashboard overview](docs/screenshots/dashboard-overview.png) | ![LotPilot onboarding flow](docs/screenshots/onboarding-flow.png) |
+| ![LotPilot Facebook connection](docs/screenshots/facebook-connection.png) | ![LotPilot messages workspace](docs/screenshots/messages-workspace.png) |
+
+## Why it reads like a real product
+
+- Dealers paste a website URL and move through a guided onboarding flow with preview, confidence scoring, and approval.
+- Inventory sync runs in the background with idempotency protection, retries, dead-letter handling, and health alerts.
+- The dashboard supports filtering, bulk actions, exports, change history, snapshots, and source monitoring.
+- Employees can be added to a round-robin listing workflow so review-ready vehicles move into manual posting queues.
+- Facebook Page connections support inbox workflows, handoff states, and publication tracking at the tenant level.
+- The data model is built around real SaaS concerns: multi-tenancy, RBAC, audit logs, background jobs, integrations, and operational history.
+
+## Core product flows
+
+### 1. Dealer onboarding
+
+1. Paste a dealership URL.
+2. Run layered detection across feed discovery, structured data, platform templates, and generic crawling.
+3. Preview detected inventory with confidence and strategy metadata.
+4. Approve supported sources or keep low-confidence results in review.
+
+### 2. Inventory and review operations
+
+- Scheduled and manual source syncs
+- Tenant-scoped vehicle search and filtering
+- Bulk archive, refresh, export, and mark-exported actions
+- Snapshot history and change-event tracking
+- Source health metrics and alerts
+
+### 3. Employee listing workflow
+
+- Employee roster management
+- Round-robin assignment of unassigned vehicles
+- Listing task creation for ready-to-post, update, and sold actions
+- Per-user listing buckets inside secure workspace routes
+
+### 4. Messaging and publication workflow
+
+- Facebook Page connection through Meta OAuth
+- Tenant-scoped Messenger conversations
+- AI reply support with human handoff fallback
+- Vehicle publication tracking and downstream posting prep
+
+## Tech stack
+
+- Next.js App Router
+- TypeScript
+- Prisma
+- PostgreSQL
+- Auth.js
+- Playwright
+- pg-boss
+- Zod
+- Tailwind CSS
+
+## Data model
+
+LotPilot uses a multi-tenant PostgreSQL schema that tracks:
+
+- tenants, users, memberships, and subscriptions
+- inventory sources, source profiles, detection runs, extraction rules, and field mappings
+- vehicles, images, snapshots, and change events
+- sync runs, health metrics, alerts, background jobs, and export jobs
+- Facebook auth accounts, messaging connections, conversations, messages, and handoff tasks
+- employee listing assignments, listing tasks, and audit logs
+
+The full schema lives in [prisma/schema.prisma](prisma/schema.prisma).
+
+## Architecture notes
+
+- Source detection is intentionally layered so supported sites can activate quickly while uncertain sites stay reviewable.
+- Inventory sync and export workflows are queued through `pg-boss` and recorded in the database for retries, auditing, and operational visibility.
+- Tenant isolation is enforced across auth, dashboard queries, downloads, messaging routes, and audit records.
+- Inventory changes cascade into downstream workflows such as publication updates, sold actions, employee listing tasks, and customer-facing messaging context.
+
+Helpful implementation entry points:
+
+- [src/components/onboarding-wizard.tsx](src/components/onboarding-wizard.tsx)
+- [src/components/inventory-dashboard.tsx](src/components/inventory-dashboard.tsx)
+- [src/lib/services/inventory-service.ts](src/lib/services/inventory-service.ts)
+
+## Local setup
+
+1. Copy `.env.example` to `.env`.
+2. Start PostgreSQL and point `DATABASE_URL` at your database.
+3. Install dependencies with `npm install`.
+4. Generate the Prisma client and push the schema:
 
 ```bash
 npm run db:generate
 npm run db:push
 ```
 
-5. Seed a demo owner workspace if desired:
+5. Optionally seed a demo owner workspace:
 
 ```bash
 npm run seed:admin
@@ -356,22 +117,17 @@ npm run seed:admin
 npx playwright install chromium
 ```
 
-7. Start the background worker and app:
+7. Start the app and worker:
 
 ```bash
 npm run worker
 npm run dev
 ```
 
-Optional recurring sync registration:
+Optional helpers:
 
 ```bash
 npm run schedule:jobs
-```
-
-Optional one-off sync for the latest active source:
-
-```bash
 npm run sync:inventory
 ```
 
@@ -384,10 +140,4 @@ Verified in this environment:
 - `npm run lint`
 - `npm run build`
 
-Live source-detection verification against `https://www.woosterdodgejeep.com`:
-
-- adapter: `dealeron`
-- strategy: `PLATFORM_TEMPLATE`
-- confidence: `0.92`
-- preview vehicles: `6`
-- review required: `false`
+Source-detection verification was also run against a live public dealership website during local testing, where the current adapter resolved a high-confidence `PLATFORM_TEMPLATE` match and returned a sample vehicle preview.

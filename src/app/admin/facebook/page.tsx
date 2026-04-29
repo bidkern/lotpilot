@@ -14,7 +14,7 @@ import { getTenantSubscriptionSummary } from "@/lib/services/subscription-servic
 import { buildUserMessagesPath } from "@/lib/workspace-routes";
 
 export const metadata: Metadata = {
-  title: "Connect Facebook | The Book",
+  title: "Connect Facebook | LotPilot",
 };
 
 export const dynamic = "force-dynamic";
@@ -73,7 +73,7 @@ export default async function FacebookConnectionPage() {
               </p>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--muted)]">
                 Any signed-in team member under this dealership account can start the login flow
-                from this page. The Book still keeps the Meta secret exchange on the server so the
+                from this page. LotPilot still keeps the Meta secret exchange on the server so the
                 connection stays secure.
               </p>
 
@@ -124,7 +124,7 @@ export default async function FacebookConnectionPage() {
                   </div>
                 </div>
                 <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
-                  The Book connects Facebook Pages through Meta OAuth. Personal-profile automation
+                  LotPilot connects Facebook Pages through Meta OAuth. Personal-profile automation
                   is intentionally not enabled.
                 </p>
               </article>

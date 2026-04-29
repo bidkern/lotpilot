@@ -186,7 +186,7 @@ function parseSearchCard(
   const titleLink = root.find(".vehicle-title").first();
   const detailLink =
     absoluteUrl(baseUrl, titleLink.attr("href")) ??
-    absoluteUrl(baseUrl, root.find('a[href*="-Wooster-"], a[href*="/new-"], a[href*="/used-"]').first().attr("href"));
+    absoluteUrl(baseUrl, root.find('a[href*="/new-"], a[href*="/used-"], a[href*="/inventory/"]').first().attr("href"));
 
   if (!detailLink) {
     return null;
@@ -632,7 +632,7 @@ function buildPreviewRecord(item: SearchListItem): ScrapedVehicleRecord {
   };
 }
 
-export const woosterCjdrAdapter: InventorySourceAdapter = {
+export const dealeronSearchAllAdapter: InventorySourceAdapter = {
   key: "dealeron",
   label: "DealerOn SearchAll",
   detect({ baseUrl, html }) {

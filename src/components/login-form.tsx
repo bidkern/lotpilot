@@ -47,10 +47,11 @@ export function LoginForm({ callbackUrl, errorMessage }: LoginFormProps) {
           Secure Login
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-          Sign in to the admin console
+          Sign in to your workspace
         </h2>
         <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-          Sign in with your tenant-scoped account to manage onboarding, inventory, and export workflows.
+          Sign in with your tenant-scoped account to manage onboarding, inventory, listing, and
+          messaging workflows.
         </p>
       </div>
 
@@ -65,7 +66,7 @@ export function LoginForm({ callbackUrl, errorMessage }: LoginFormProps) {
               autoComplete="email"
               className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]"
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="owner@thebook.local"
+              placeholder="owner@lotpilot.local"
               type="email"
               value={email}
             />

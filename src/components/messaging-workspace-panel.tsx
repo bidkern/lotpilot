@@ -142,14 +142,14 @@ export function MessagingWorkspacePanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-            Messenger Connector
+            Customer Messaging
           </p>
           <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-            Facebook Page inbox automation
+            Facebook inbox and handoff workflows
           </h3>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            Dealers connect a Facebook Page, inbound Messenger conversations land in this
-            workspace, and low-confidence replies fall back to human handoff.
+            Dealers connect a Facebook Page, keep customer conversations beside inventory and
+            listing work, and hand off low-confidence replies to staff when needed.
           </p>
         </div>
 
@@ -214,10 +214,10 @@ export function MessagingWorkspacePanel({
       ) : null}
 
       <div className="mt-4 rounded-[24px] border border-[var(--line)] bg-[rgba(17,40,46,0.92)] px-4 py-4 text-sm leading-6 text-white/82">
-        Supported workflow: connect a Facebook Page, receive Messenger webhooks, store
-        conversations in the tenant workspace, send inventory-aware replies, and escalate sensitive
-        questions to staff. Unsupported workflow: logging into a personal Facebook profile or
-        promising guaranteed Marketplace auto-posting.
+        Supported workflow: connect a Facebook Page, receive Messenger webhooks, keep customer
+        conversations inside the tenant workspace, send inventory-aware replies, and escalate
+        sensitive questions to staff. Unsupported workflow: logging into a personal Facebook
+        profile or promising universal one-click posting.
       </div>
 
       <div className="mt-4 rounded-[24px] border border-[var(--line)] bg-white/82 p-4">

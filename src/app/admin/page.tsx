@@ -9,7 +9,7 @@ import { getDashboardData } from "@/lib/services/inventory-service";
 import { getTenantWorkspaceState } from "@/lib/services/tenant-service";
 
 export const metadata: Metadata = {
-  title: "The Book Workspace",
+  title: "Workspace | LotPilot",
 };
 
 export const dynamic = "force-dynamic";

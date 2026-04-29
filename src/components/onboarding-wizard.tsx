@@ -329,7 +329,7 @@ export function OnboardingWizard({
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
       <section className="rounded-[34px] border border-[var(--line)] bg-[linear-gradient(135deg,rgba(255,250,244,0.96),rgba(248,240,229,0.92),rgba(227,214,193,0.94))] p-8 shadow-[0_30px_90px_rgba(19,29,33,0.12)]">
         <p className="font-mono text-xs uppercase tracking-[0.34em] text-[var(--muted)]">
-          The Book Onboarding
+          LotPilot Onboarding
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-5xl">
           Paste a dealer URL and let the system work through the layers.

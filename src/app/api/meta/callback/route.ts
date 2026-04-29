@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 
   if (!session?.user?.id || !session.user.tenantId) {
     return popupOrRedirect({
-      message: "Please sign back into The Book before completing Meta connection.",
+      message: "Please sign back into LotPilot before completing Meta connection.",
       status: "error",
     });
   }

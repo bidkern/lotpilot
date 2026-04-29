@@ -193,7 +193,7 @@ function normalizeDealershipUrl(input: string) {
 async function fetchText(url: string) {
   return fetchTextWithRedirectValidation(url, {
     headers: {
-      "user-agent": "TheBookBot/1.0 (+inventory onboarding preview)",
+      "user-agent": "LotPilotBot/1.0 (+inventory onboarding preview)",
     },
   });
 }

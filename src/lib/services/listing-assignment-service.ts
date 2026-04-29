@@ -62,7 +62,7 @@ function buildTaskDescription(input: {
     .join(" | ");
 
   if (input.taskType === ListingTaskType.MARK_SOLD) {
-    return `${summary}. This vehicle changed status in The Book and should be marked sold, removed, or archived in the employee-managed Marketplace workflow. Source listing: ${input.detailPageUrl}`;
+    return `${summary}. This vehicle changed status in LotPilot and should be marked sold, removed, or archived in the employee-managed listing workflow. Source listing: ${input.detailPageUrl}`;
   }
 
   if (input.taskType === ListingTaskType.UPDATE_POST) {

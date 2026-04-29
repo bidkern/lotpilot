@@ -67,14 +67,14 @@ export function RegisterForm({ errorMessage }: RegisterFormProps) {
     <section className="rounded-[32px] border border-[var(--line)] bg-[var(--panel-strong)] p-8 shadow-[0_24px_80px_rgba(18,31,37,0.12)] sm:p-10">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.32em] text-[var(--muted)]">
-          The Book
+          LotPilot
         </p>
         <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
           Start your dealer inventory workspace
         </h2>
         <p className="mt-3 text-sm leading-7 text-[var(--muted)]">
-          Create the first tenant owner account, then connect the dealership site in the onboarding
-          wizard.
+          Create the first tenant owner account, then connect the dealership site, employee
+          listing workflow, and customer messaging tools inside one LotPilot workspace.
         </p>
       </div>
 

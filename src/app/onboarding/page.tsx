@@ -7,7 +7,7 @@ import { requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Onboarding | The Book",
+  title: "Onboarding | LotPilot",
 };
 
 export const dynamic = "force-dynamic";

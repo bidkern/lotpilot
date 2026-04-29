@@ -17,8 +17,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Book",
-  description: "Dealer inventory onboarding, sync health, exports, and AI-assisted sales workflows.",
+  title: "LotPilot",
+  description:
+    "Multi-tenant dealer operations platform for inventory onboarding, sync automation, exports, and messaging workflows.",
 };
 
 export default function RootLayout({
@@ -36,7 +37,7 @@ export default function RootLayout({
             __html: `
               (() => {
                 try {
-                  const stored = window.localStorage.getItem("the-book-theme");
+                  const stored = window.localStorage.getItem("lotpilot-theme");
                   const mode = stored === "dark" || stored === "light"
                     ? stored
                     : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");

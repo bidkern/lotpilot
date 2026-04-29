@@ -48,14 +48,14 @@ export function buildMetaPopupHtml(payload: MetaPopupPayload) {
     message: payload.message,
     status: payload.status,
     targetOrigin,
-    type: "the-book-meta-auth",
+    type: "lotpilot-meta-auth",
   });
 
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>The Book | Meta Connection</title>
+    <title>LotPilot | Meta Connection</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       :root {
