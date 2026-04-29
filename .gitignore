@@ -69,6 +69,7 @@ __pycache__/
 .env.development.local
 .env.production
 .env.production.local
+legacy_github_imports/
 *.db
 *.db-shm
 *.db-wal
