@@ -1,4 +1,6 @@
-# LotPilot
+﻿# LotPilot
+
+[Portfolio notes and demo guidance](PORTFOLIO.md)
 
 LotPilot is an all-in-one dealer operations platform for onboarding inventory sources, syncing vehicle data, managing listing work, exporting reviewed payloads, and coordinating Facebook-connected customer conversations inside one tenant-safe workspace.
 
@@ -197,3 +199,4 @@ nextjs, typescript, prisma, postgresql, playwright, inventory-management, saas, 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
