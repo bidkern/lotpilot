@@ -4,10 +4,19 @@ import { prisma } from "../src/lib/prisma";
 import { stopQueue } from "../src/lib/queue";
 import { ensureSourceSyncSchedule } from "../src/lib/services/source-scheduler";
 
+type ScheduledInventorySource = {
+  id: string;
+  syncCron: string | null;
+};
+
 async function main() {
-  const sources = await prisma.inventorySource.findMany({
+  const sources: ScheduledInventorySource[] = await prisma.inventorySource.findMany({
     where: {
       status: "ACTIVE",
+    },
+    select: {
+      id: true,
+      syncCron: true,
     },
   });
 

@@ -45,6 +45,8 @@ next-env.d.ts
 /dev.db
 
 # Codex local project sync
+legacy_github_imports/
+
 # Local dependencies and builds
 node_modules/
 .next/
