@@ -32,7 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-!.env.example
 
 # vercel
 .vercel
@@ -69,7 +68,6 @@ __pycache__/
 .env.development.local
 .env.production
 .env.production.local
-legacy_github_imports/
 *.db
 *.db-shm
 *.db-wal
