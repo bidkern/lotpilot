@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/lotpilot?schema=public
+      AUTH_SECRET: ci-auth-secret-with-enough-length-change-me
+      APP_URL: http://localhost:3000
+      META_APP_ID: ""
+      META_APP_SECRET: ""
+      META_GRAPH_API_VERSION: v23.0
+      META_REDIRECT_URI: http://localhost:3000/api/meta/callback
+      META_TOKEN_ENCRYPTION_KEY: ""
+      META_VERIFY_TOKEN: ""
+      DEFAULT_SYNC_CRON: "*/30 * * * *"
+      JOBS_EXPORT_DIRECTORY: ./runtime-data/exports
+      STORAGE_PROVIDER: local
+      STORAGE_LOCAL_DIRECTORY: ./runtime-data/storage
+      IMAGE_CACHE_ENABLED: "false"
+      IMAGE_CACHE_LIMIT_PER_VEHICLE: "4"
+      INVENTORY_PERSIST_BATCH_SIZE: "20"
+      SCRAPER_HEADLESS: "true"
+      PLAYWRIGHT_BROWSER: chromium
+      SCRAPER_DETAIL_CONCURRENCY: "5"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npx prisma validate
+      - run: npm run lint
+      - run: npm run build
