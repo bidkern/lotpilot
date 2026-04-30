@@ -1,5 +1,7 @@
 # LotPilot
 
+[![CI](https://github.com/bidkern/lotpilot/actions/workflows/ci.yml/badge.svg)](https://github.com/bidkern/lotpilot/actions/workflows/ci.yml)
+
 LotPilot is an all-in-one dealer operations platform that combines inventory onboarding, listing operations, exports, and Facebook-connected customer messaging inside one tenant-safe workspace.
 
 LotPilot brings together dealership site onboarding, inventory sync, employee listing workflows, reviewable posting payloads, and customer conversations without forcing teams to bounce between separate tools.
