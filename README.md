@@ -8,6 +8,8 @@ LotPilot brings together dealership site onboarding, inventory sync, employee li
 
 Instead of pretending one generic scraper can automate every dealer site, LotPilot uses layered detection and keeps low-confidence sources in review until they are ready. That "honest automation" approach is a core product decision.
 
+Recruiter shortcut: see [PORTFOLIO.md](PORTFOLIO.md) for a one-page overview of the product, role fit, and best review path.
+
 ## Screenshots
 
 Live UI snapshots from a generic seeded LotPilot workspace:
@@ -137,6 +139,7 @@ npm run sync:inventory
 
 Verified in this environment:
 
+- `npm audit`
 - `npx prisma validate`
 - `npx prisma generate`
 - `npm run lint`
