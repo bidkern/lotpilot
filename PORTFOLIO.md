@@ -1,6 +1,6 @@
 # Portfolio Overview: LotPilot
 
-LotPilot is a dealer operations platform for inventory onboarding, source sync, listing review, exports, and customer messaging. It is the strongest portfolio proof for operations, implementation, product operations, sales operations, and workflow automation roles.
+LotPilot is a dealer operations platform for inventory onboarding, source sync, listing review, exports, and customer messaging. It is the strongest portfolio proof for operations, implementation, product operations, customer operations, sales operations, and workflow automation roles.
 
 ## What this project proves
 
@@ -21,5 +21,4 @@ LotPilot is a dealer operations platform for inventory onboarding, source sync, 
 
 LotPilot is best aligned with jobs where the work includes translating business workflows into tools, improving operational follow-through, coordinating messy records, or supporting technical implementation.
 
-It should not be read as a claim that Jesse is targeting senior engineering roles. The project shows practical product thinking, structured operations, and enough technical execution to work well with engineering, data, and business teams.
-
+The project shows practical product thinking, structured operations, and enough technical execution to work well with engineering, data, and business teams.
